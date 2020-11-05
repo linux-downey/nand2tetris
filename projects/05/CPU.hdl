@@ -39,5 +39,46 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+        Mux16(b=outALU,a=instruction,sel=instruction[15],out=outToAReg);
+        /*A register*/
+        Not(in=instruction[15],out=outLoadAIn1);
+        Mux(b=instruction[5],sel=instruction[15],out=outLoadAIn2);
+        Or(a=outLoadAIn1,b=outLoadAIn2,out=outLoadAReg);
+        ARegister(in=outToAReg,load=outLoadAReg,out=aRegOut,out[0..14]=addressM);
+	/*ALU input Y*/
+        Mux(b=instruction[12],sel=instruction[15],out=outLoadMux16);
+        Mux16(a=aRegOut,b=inM,sel=outLoadMux16,out=outToALUY);
+        /*ALU input X ,D register*/
+        Mux(b=instruction[4],sel=instruction[15],out=outLoadDReg);
+        DRegister(in=outALU,load=outLoadDReg,out=outToALUX);
+        /* ALU */
+
+        Mux(b=instruction[11],sel=instruction[15],out=outZxIn);
+        Mux(b=instruction[10],sel=instruction[15],out=outNxIn);
+        Mux(b=instruction[9],sel=instruction[15],out=outZyIn);
+        Mux(b=instruction[8],sel=instruction[15],out=outNyIn);
+        Mux(b=instruction[7],sel=instruction[15],out=outFIn);
+        Mux(b=instruction[6],sel=instruction[15],out=outNoIn);
+
+        ALU(x=outToALUX,y=outToALUY,zx=outZxIn,nx=outNxIn,zy=outZyIn,ny=outNyIn,f=outFIn,no=outNoIn,out=outALU,out=outM,zr=outALUZr,ng=outALUNg);
+
+      /* PC */
+        /*load bit*/
+        
+        Mux(b=instruction[2],sel=instruction[15],out=outj1);
+        Mux(b=instruction[1],sel=instruction[15],out=outj2);
+        Mux(b=instruction[0],sel=instruction[15],out=outj3);
+
+        And(a=outj1,b=outALUNg,out=outJ1);
+        And(a=outj2,b=outALUZr,out=outJ2);
+        Not(in=outALUNg,out=outNotALUNg);
+        Not(in=outALUZr,out=outNotALUZr);
+        And(a=outj3,b=outNotALUNg,out=outTmp1);
+        And(a=outTmp1,b=outNotALUZr,out=outJ3);
+        Or(a=outJ1,b=outJ2,out=outTmp2);
+        Or(a=outTmp2,b=outJ3,out=outLoadPCReg);
+        PC(in=aRegOut,load=outLoadPCReg,inc=true,reset=reset,out[0..14]=pc);
+       
+        /*write M*/ 
+        Mux(b=instruction[3],sel=instruction[15],out=writeM);
 }

@@ -13,24 +13,61 @@
 
 // Put your code here.
 
-@0
-//M=16384
-@1
-//M=24575
+(KLOOP)
+@24576
+D=M
+@UNPRESS
+D,JEQ
+@PRESS
+D,JGT
 
-(LOOP)
+
+(PRESS)
+@2
+M=-1
+@SCREEN
+0,JEQ
+
+(UNPRESS)
+@2
+M=0
+@SCREEN
+0,JEQ
+
+
+(SCREEN)
+@16384
+D=A
+@0
+M=D
+
+@24576
+D=A
+@1
+M=D
+
+(SLOOP)
+@2
+D=M
+@0
+A=M
+M=D
+
 @0
 D=M
 D=D+1
 M=D
 
-@D
-M=-1
-
 @1
 D=D-M
 
-@LOOP
+@SLOOP
 D;JLT
+
+@KLOOP
+0;JEQ
+
+
+
 
 
